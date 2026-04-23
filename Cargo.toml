@@ -1,0 +1,20 @@
+[package]
+name = "brave-volume-restore"
+version = "1.0.0"
+edition = "2021"
+
+[dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_Media_Audio",
+    "Win32_System_Com",
+    "Win32_System_Threading",
+] }
+
+# Binaire aussi petit que possible
+[profile.release]
+opt-level = "z"      # optimise la taille
+lto = true           # link-time optimization
+codegen-units = 1
+strip = true         # retire les symboles de debug
+panic = "abort"      # pas de stack unwinder
