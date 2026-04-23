@@ -1,7 +1,7 @@
 # Brave Volume Restore
 
-Daemon Rust léger qui surveille le mixer audio Windows et remet Brave
-à ton volume préféré dès qu'il s'ouvre.
+Brave remet son volume à 100% dans le mixer Windows à chaque ouverture.
+Ce daemon Rust tourne en fond et le restaure automatiquement à ta dernière valeur.
 
 ## Pré-requis
 
@@ -23,22 +23,12 @@ Le script :
 ## Comment ça marche
 
 ```
-[Daemon Rust] ──poll 500ms──▶ Windows Audio Session Manager
-                                    │
-                     brave.exe apparaît dans le mixer
-                                    │
-                    SetMasterVolume(volume.cfg) ──────────────┐
-                                                              │
-                     tu changes le volume manuellement        │
-                                    │                         │
-                         sauvegarde dans volume.cfg ──────────┘
+Brave s'ouvre   →  Daemon restaure le volume depuis volume.cfg
+Volume changé   →  Daemon détecte le changement et sauvegarde dans volume.cfg
+Brave se ferme  →  Daemon continue de tourner en arrière-plan
 ```
 
-- Brave s'ouvre → le daemon restaure le dernier volume connu (50% par défaut)
-- Tu changes le volume dans le mixer → le daemon le détecte et le sauvegarde
-- Tu fermes et rouvres Brave → repart exactement où t'en étais
-
-Le daemon tourne en arrière-plan sans fenêtre, sans icône dans la barre des tâches.
+Le daemon tourne sans fenêtre, sans icône dans la barre des tâches.
 Il utilise ~1MB de RAM et 0% de CPU en dehors du poll toutes les 500ms.
 
 ## Fichiers
@@ -47,15 +37,14 @@ Il utilise ~1MB de RAM et 0% de CPU en dehors du poll toutes les 500ms.
 brave-volume-restore/
 ├── src/main.rs         ← code Rust (~120 lignes)
 ├── Cargo.toml          ← dépendance unique : crate `windows`
-└── install.bat         ← compile + installe
+├── install.bat         ← compile + installe
+└── uninstall.bat       ← désinstalle proprement
 ```
 
 Config : `%APPDATA%\BraveVolumeRestore\volume.cfg` (float 0.0–1.0)
 
 ## Désinstaller
 
-```bat
-reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v "BraveVolumeRestore" /f
-taskkill /im brave-volume-restore.exe /f
-rmdir /s /q "%APPDATA%\BraveVolumeRestore"
+```
+double-clic sur uninstall.bat
 ```
